@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script>
+        window.onload = function () {
+
+
+            navigator.getMedia = (navigator.getUserMedia ||
+                navigator.webkitGetUserMedia ||
+                navigator.mozGetUserMedia ||
+                navigator.msGetUserMedia);
+
+
+            var paths = document.getElementsByTagName('path');
+            var visualizer = document.getElementById('visualizer');
+            var mask = visualizer.getElementById('mask');
+            var h = document.getElementsByTagName('h1')[0];
+            var path;
+            var report = 0;
+
+            var soundAllowed = function (stream) {
+                //Audio stops listening in FF without // window.persistAudioStream = stream;
+                //https://bugzilla.mozilla.org/show_bug.cgi?id=965483
+                //https://support.mozilla.org/en-US/questions/984179
+                
+                window.persistAudioStream = stream;
+                h.innerHTML = "Thanks";
+                h.setAttribute('style', 'opacity: 0;');
+                var audioContent = new AudioContext();
+                var audioStream = audioContent.createMediaStreamSource(stream);
+                var analyser = audioContent.createAnalyser();
+                audioStream.connect(analyser);
+                analyser.fftSize = 1024;
+
+                var frequencyArray = new Uint8Array(analyser.frequencyBinCount);
+                visualizer.setAttribute('viewBox', '0 0 255 255');
+
+                //Through the frequencyArray has a length longer than 255, there seems to be no
+                //significant data after this point. Not worth visualizing.
+                for (var i = 0; i < 255; i++) {
+                    path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('stroke-dasharray', '4,1');
+                    mask.appendChild(path);
+                }
+                var doDraw = function () {
+                    requestAnimationFrame(doDraw);
+                    analyser.getByteFrequencyData(frequencyArray);
+
+                    var adjustedLength;
+                    for (var i = 0; i < 255; i++) {
+                        adjustedLength = Math.floor(frequencyArray[i]) - (Math.floor(frequencyArray[i]) % 5);
+                        paths[i].setAttribute('d', 'M ' + (i) + ',255 l 0,-' + adjustedLength);
+                    }
+
+                }
+                doDraw();
+            }
+
+            var soundNotAllowed = function (error) {
+                h.innerHTML = "You must allow your microphone.";
+                console.log(error);
+            }
+
+            /*window.navigator = window.navigator || {};
+            /*navigator.getUserMedia =  navigator.getUserMedia       ||
+                                      navigator.webkitGetUserMedia ||
+                                      navigator.mozGetUserMedia    ||
+                                      null;*/
+            navigator.getMedia({ audio: true }, soundAllowed, soundNotAllowed);
+
+        };
+    </script>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            background-color: #222;
+            font-size: 0;
+        }
+
+        svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            position: absolute;
+
+        }
+
+        h1 {
+            width: 100%;
+            font-family: sans-serif;
+            position: absolute;
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            top: 40%;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+            -moz-transition: opacity 1s ease-in-out;
+            -webkit-transition: opacity 1s ease-in-out;
+        }
+
+        h1 a {
+            color: #48b1f4;
+            text-decoration: none;
+        }
+
+        path {
+            stroke-linecap: square;
+            stroke: white;
+            stroke-width: 0.5px;
+        }
+    </style>
+</head>
+
+<body>
+    <svg preserveAspectRatio="none" id="visualizer" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <defs>
+
+            <mask id="mask">
+                <g id="maskGroup">
+                </g>
+            </mask>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="1%" style="stop-color:hsl(3.45, 100%, 50%);stop-opacity:1" />
+                <stop offset="2%" style="stop-color:hsl(6.9, 100%, 50%);stop-opacity:1" />
+                <stop offset="3%" style="stop-color:hsl(10.35, 100%, 50%);stop-opacity:1" />
+                <stop offset="4%" style="stop-color:hsl(13.8, 100%, 50%);stop-opacity:1" />
+                <stop offset="5%" style="stop-color:hsl(17.25, 100%, 50%);stop-opacity:1" />
+                <stop offset="6%" style="stop-color:hsl(20.7, 100%, 50%);stop-opacity:1" />
+                <stop offset="7%" style="stop-color:hsl(24.15, 100%, 50%);stop-opacity:1" />
+                <stop offset="8%" style="stop-color:hsl(27.6, 100%, 50%);stop-opacity:1" />
+                <stop offset="9%" style="stop-color:hsl(31.05, 100%, 50%);stop-opacity:1" />
+                <stop offset="10%" style="stop-color:hsl(34.5, 100%, 50%);stop-opacity:1" />
+                <stop offset="11%" style="stop-color:hsl(37.95, 100%, 50%);stop-opacity:1" />
+                <stop offset="12%" style="stop-color:hsl(41.4, 100%, 50%);stop-opacity:1" />
+                <stop offset="13%" style="stop-color:hsl(44.85, 100%, 50%);stop-opacity:1" />
+                <stop offset="14%" style="stop-color:hsl(48.3, 100%, 50%);stop-opacity:1" />
+                <stop offset="15%" style="stop-color:hsl(51.75, 100%, 50%);stop-opacity:1" />
+                <stop offset="16%" style="stop-color:hsl(55.2, 100%, 50%);stop-opacity:1" />
+                <stop offset="17%" style="stop-color:hsl(58.65, 100%, 50%);stop-opacity:1" />
+                <stop offset="18%" style="stop-color:hsl(62.1, 100%, 50%);stop-opacity:1" />
+                <stop offset="19%" style="stop-color:hsl(65.55, 100%, 50%);stop-opacity:1" />
+                <stop offset="20%" style="stop-color:hsl(69, 100%, 50%);stop-opacity:1" />
+                <stop offset="21%" style="stop-color:hsl(72.45, 100%, 50%);stop-opacity:1" />
+                <stop offset="22%" style="stop-color:hsl(75.9, 100%, 50%);stop-opacity:1" />
+                <stop offset="23%" style="stop-color:hsl(79.35, 100%, 50%);stop-opacity:1" />
+                <stop offset="24%" style="stop-color:hsl(82.8, 100%, 50%);stop-opacity:1" />
+                <stop offset="25%" style="stop-color:hsl(86.25, 100%, 50%);stop-opacity:1" />
+                <stop offset="26%" style="stop-color:hsl(89.7, 100%, 50%);stop-opacity:1" />
+                <stop offset="27%" style="stop-color:hsl(93.15, 100%, 50%);stop-opacity:1" />
+                <stop offset="28%" style="stop-color:hsl(96.6, 100%, 50%);stop-opacity:1" />
+                <stop offset="29%" style="stop-color:hsl(100.05, 100%, 50%);stop-opacity:1" />
+                <stop offset="30%" style="stop-color:hsl(103.5, 100%, 50%);stop-opacity:1" />
+                <stop offset="31%" style="stop-color:hsl(106.95, 100%, 50%);stop-opacity:1" />
+                <stop offset="32%" style="stop-color:hsl(110.4, 100%, 50%);stop-opacity:1" />
+                <stop offset="33%" style="stop-color:hsl(113.85, 100%, 50%);stop-opacity:1" />
+                <stop offset="34%" style="stop-color:hsl(117.3, 100%, 50%);stop-opacity:1" />
+                <stop offset="35%" style="stop-color:hsl(120.75, 100%, 50%);stop-opacity:1" />
+                <stop offset="36%" style="stop-color:hsl(124.2, 100%, 50%);stop-opacity:1" />
+                <stop offset="37%" style="stop-color:hsl(127.65, 100%, 50%);stop-opacity:1" />
+                <stop offset="38%" style="stop-color:hsl(131.1, 100%, 50%);stop-opacity:1" />
+                <stop offset="39%" style="stop-color:hsl(134.55, 100%, 50%);stop-opacity:1" />
+                <stop offset="40%" style="stop-color:hsl(138, 100%, 50%);stop-opacity:1" />
+                <stop offset="41%" style="stop-color:hsl(141.45, 100%, 50%);stop-opacity:1" />
+                <stop offset="42%" style="stop-color:hsl(144.9, 100%, 50%);stop-opacity:1" />
+                <stop offset="43%" style="stop-color:hsl(148.35, 100%, 50%);stop-opacity:1" />
+                <stop offset="44%" style="stop-color:hsl(151.8, 100%, 50%);stop-opacity:1" />
+                <stop offset="45%" style="stop-color:hsl(155.25, 100%, 50%);stop-opacity:1" />
+                <stop offset="46%" style="stop-color:hsl(158.7, 100%, 50%);stop-opacity:1" />
+                <stop offset="47%" style="stop-color:hsl(162.15, 100%, 50%);stop-opacity:1" />
+                <stop offset="48%" style="stop-color:hsl(165.6, 100%, 50%);stop-opacity:1" />
+                <stop offset="49%" style="stop-color:hsl(169.05, 100%, 50%);stop-opacity:1" />
+                <stop offset="50%" style="stop-color:hsl(172.5, 100%, 50%);stop-opacity:1" />
+                <stop offset="51%" style="stop-color:hsl(175.95, 100%, 50%);stop-opacity:1" />
+                <stop offset="52%" style="stop-color:hsl(179.4, 100%, 50%);stop-opacity:1" />
+                <stop offset="53%" style="stop-color:hsl(182.85, 100%, 50%);stop-opacity:1" />
+                <stop offset="54%" style="stop-color:hsl(186.3, 100%, 50%);stop-opacity:1" />
+                <stop offset="55%" style="stop-color:hsl(189.75, 100%, 50%);stop-opacity:1" />
+                <stop offset="56%" style="stop-color:hsl(193.2, 100%, 50%);stop-opacity:1" />
+                <stop offset="57%" style="stop-color:hsl(196.65, 100%, 50%);stop-opacity:1" />
+                <stop offset="58%" style="stop-color:hsl(200.1, 100%, 50%);stop-opacity:1" />
+                <stop offset="59%" style="stop-color:hsl(203.55, 100%, 50%);stop-opacity:1" />
+                <stop offset="60%" style="stop-color:hsl(207, 100%, 50%);stop-opacity:1" />
+                <stop offset="61%" style="stop-color:hsl(210.45, 100%, 50%);stop-opacity:1" />
+                <stop offset="62%" style="stop-color:hsl(213.9, 100%, 50%);stop-opacity:1" />
+                <stop offset="63%" style="stop-color:hsl(217.35, 100%, 50%);stop-opacity:1" />
+                <stop offset="64%" style="stop-color:hsl(220.8, 100%, 50%);stop-opacity:1" />
+                <stop offset="65%" style="stop-color:hsl(224.25, 100%, 50%);stop-opacity:1" />
+                <stop offset="66%" style="stop-color:hsl(227.7, 100%, 50%);stop-opacity:1" />
+                <stop offset="67%" style="stop-color:hsl(231.15, 100%, 50%);stop-opacity:1" />
+                <stop offset="68%" style="stop-color:hsl(234.6, 100%, 50%);stop-opacity:1" />
+                <stop offset="69%" style="stop-color:hsl(238.05, 100%, 50%);stop-opacity:1" />
+                <stop offset="70%" style="stop-color:hsl(241.5, 100%, 50%);stop-opacity:1" />
+                <stop offset="71%" style="stop-color:hsl(244.95, 100%, 50%);stop-opacity:1" />
+                <stop offset="72%" style="stop-color:hsl(248.4, 100%, 50%);stop-opacity:1" />
+                <stop offset="73%" style="stop-color:hsl(251.85, 100%, 50%);stop-opacity:1" />
+                <stop offset="74%" style="stop-color:hsl(255.3, 100%, 50%);stop-opacity:1" />
+                <stop offset="75%" style="stop-color:hsl(258.75, 100%, 50%);stop-opacity:1" />
+                <stop offset="76%" style="stop-color:hsl(262.2, 100%, 50%);stop-opacity:1" />
+                <stop offset="77%" style="stop-color:hsl(265.65, 100%, 50%);stop-opacity:1" />
+                <stop offset="78%" style="stop-color:hsl(269.1, 100%, 50%);stop-opacity:1" />
+                <stop offset="79%" style="stop-color:hsl(272.55, 100%, 50%);stop-opacity:1" />
+                <stop offset="80%" style="stop-color:hsl(276, 100%, 50%);stop-opacity:1" />
+                <stop offset="81%" style="stop-color:hsl(279.45, 100%, 50%);stop-opacity:1" />
+                <stop offset="82%" style="stop-color:hsl(282.9, 100%, 50%);stop-opacity:1" />
+                <stop offset="83%" style="stop-color:hsl(286.35, 100%, 50%);stop-opacity:1" />
+                <stop offset="84%" style="stop-color:hsl(289.8, 100%, 50%);stop-opacity:1" />
+                <stop offset="85%" style="stop-color:hsl(293.25, 100%, 50%);stop-opacity:1" />
+                <stop offset="86%" style="stop-color:hsl(296.7, 100%, 50%);stop-opacity:1" />
+                <stop offset="87%" style="stop-color:hsl(300.15, 100%, 50%);stop-opacity:1" />
+                <stop offset="88%" style="stop-color:hsl(303.6, 100%, 50%);stop-opacity:1" />
+                <stop offset="89%" style="stop-color:hsl(307.05, 100%, 50%);stop-opacity:1" />
+                <stop offset="90%" style="stop-color:hsl(310.5, 100%, 50%);stop-opacity:1" />
+                <stop offset="91%" style="stop-color:hsl(313.95, 100%, 50%);stop-opacity:1" />
+                <stop offset="92%" style="stop-color:hsl(317.4, 100%, 50%);stop-opacity:1" />
+                <stop offset="93%" style="stop-color:hsl(320.85, 100%, 50%);stop-opacity:1" />
+                <stop offset="94%" style="stop-color:hsl(324.3, 100%, 50%);stop-opacity:1" />
+                <stop offset="95%" style="stop-color:hsl(327.75, 100%, 50%);stop-opacity:1" />
+                <stop offset="96%" style="stop-color:hsl(331.2, 100%, 50%);stop-opacity:1" />
+                <stop offset="97%" style="stop-color:hsl(334.65, 100%, 50%);stop-opacity:1" />
+                <stop offset="98%" style="stop-color:hsl(338.1, 100%, 50%);stop-opacity:1" />
+                <stop offset="99%" style="stop-color:hsl(341.55, 100%, 50%);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:hsl(345, 100%, 50%);stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="100%" height="100%" fill="url(#gradient)" mask="url(#mask)"></rect>
+    </svg>
+
+    <h1>Dê permissão para o microfone!</h1>
+    <script>
+        function criarElementoBars() {
+
+            let bars = document.getElementById("gradient");
+
+            for (let k = 1; k <= 100; k++) {
+                let stop = document.createElement("stop");
+                stop.setAttribute("offset", k + "%");
+                stop.setAttribute("style", "stop-color:hsl(" + k * 345 / 100 + ", 100%, 50%);stop-opacity:1");
+                bars.appendChild(stop);
+            }
+
+
+        }
+
+    </script>
+</body>
+
+</html>
